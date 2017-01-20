@@ -5,6 +5,7 @@ import urllib
 import urllib2
 import re
 import contextlib
+import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'resources', 'lib'))
 
 from connector import ConnectionBuilder
@@ -80,14 +81,16 @@ if not ktv_login or not ktv_password:
 connection_builder = ConnectionBuilder(ktv_login, ktv_password, addon_id)
 
 if not ktv_cookies_uid or not ktv_cookies_pass:
-    getted = None
+    received = None
     cookie_jar = connection_builder.login_or_none()
     if cookie_jar:
         for cook in cookie_jar:
-            if cook.name == 'uid': ktv_cookies_uid = cook.value
-            if cook.name == 'pass': ktv_cookies_pass = cook.value
-            if cook.name == 'pass': getted = True
-    if getted:
+            if cook.name == 'uid':
+                ktv_cookies_uid = cook.value
+            if cook.name == 'pass':
+                ktv_cookies_pass = cook.value
+                received = True
+    if received:
         __addon__.setSetting('cookies_pass', ktv_cookies_pass)
         __addon__.setSetting('cookies_uid', ktv_cookies_uid)
     else:
@@ -355,8 +358,8 @@ def get_by_persone(img, info, _id):
     return get_by(img, info, bsdetail.findAll('tr'))
 
 
-def get_by_seed(img, info, id):
-    detail = http_get('http://kinozal.tv/ajax/details_get.php?id=%s&sr=103' % id)
+def get_by_seed(img, info, _id):
+    detail = http_get('http://kinozal.tv/ajax/details_get.php?id=%s&sr=103' % _id)
     bsdetail = BeautifulSoup(detail.decode('cp1251'))
     return get_by(img, info, bsdetail.findAll('tr'))
 
