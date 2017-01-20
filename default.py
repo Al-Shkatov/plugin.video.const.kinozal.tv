@@ -54,7 +54,7 @@ except:
     __addon__.setSetting('filter', '1')
     __addon__.setSetting('querry', '')
     # import datetime
-    __addon__.setSetting('year', 0) # str(datetime.date.today().year))
+    __addon__.setSetting('year', '0')  # str(datetime.date.today().year))
 
 __language__ = __addon__.getLocalizedString
 
