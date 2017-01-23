@@ -128,6 +128,7 @@ def main_screen(params):
 
 def place_link(title, params):
     li = xbmcgui.ListItem(title)
+    li.setContentLookup(False)
     uri = construct_request(params)
     xbmcplugin.addDirectoryItem(_internal_screen_id, uri, li, False)
 
@@ -204,6 +205,7 @@ def get_querry(params):
 
 def place_folder(title, params):
     li = xbmcgui.ListItem(title)
+    li.setContentLookup(False)
     uri = construct_request(params)
     xbmcplugin.addDirectoryItem(_internal_screen_id, uri, li, True)
 
@@ -704,19 +706,55 @@ def play(params):
     stream = services.torrent_stream()
     player = services.player()
 
-    stream.play(player, torrent, None, 0)
+    if len(torrent.files) > 1:
+        items = []
+        for _file in torrent.files:
+            item = xbmcgui.ListItem(_file.path)
+            item.setInfo(type='video', infoLabels='')
+            uri = construct_request({
+                'func': 'play_from_file',
+                'torr_url': params['torr_url'],
+                'filename': filename,
+                'torr_index': _file.index
+            })
+            item.setProperty('IsPlayable', 'true')
+            items.append((uri, item, False))
+
+        xbmcplugin.addDirectoryItems(_internal_screen_id, sorted(items, key=lambda it: it[1].getLabel()))
+        xbmcplugin.endOfDirectory(_internal_screen_id)
+    else:
+        stream.play(player, torrent, None, 0)
 
 
-def addplist(params):
-    li = xbmcgui.ListItem(params['tt'])
-    uri = construct_request({
-        'torr_url': params['t'],
-        'title': params['tt'].decode('utf-8'),
-        'ind': urllib.unquote_plus(params['i']),
-        'img': urllib.unquote_plus(params['ii']),
-        'func': 'play_url2'
-    })
-    xbmc.PlayList(xbmc.PLAYLIST_VIDEO).add(uri, li)
+def play_from_file(params):
+    from support.torrent import Torrent
+    from support import services
+
+    _idx = params['torr_index']
+    filename = params['filename']
+    try:
+        f = open(filename, 'rb')
+        data = f.read()
+        f.close()
+    except:
+        xbmc.log('[%s]: Cant open file "%s" trying to download again' % (addon_id, filename), 4)
+        url_opener = connection_builder.build_authorized_connection()
+        request = urllib2.Request(params['torr_url'])
+        url = url_opener.open(request)
+        data = url.read()
+        try:
+            f = open(filename, 'wb')
+            f.write(data)
+            f.close()
+        except:
+            xbmc.log('[%s]: Cant create file "%s"' % (addon_id, filename), 4)
+            show_message('Internal addon error', 'File "%s" not found' % filename, 2000)
+            return
+
+    torrent = Torrent(None, data, filename)
+    stream = services.torrent_stream()
+    player = services.player()
+    stream.play(player, torrent, None, int(_idx))
 
 
 def get_params(paramstring):
@@ -743,7 +781,6 @@ def index():
         func = params['func']
         del params['func']
     except:
-        func = None
         xbmc.log('[%s]: Primary input' % addon_id, 1)
         main_screen(params)
         sys.exit()
