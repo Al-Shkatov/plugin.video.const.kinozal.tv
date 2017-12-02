@@ -5,5 +5,6 @@
     <setting id="password" type="text" option="hidden" label="Пароль" enable="!eq(-1,)" default="" />
     <setting id="temp_path" type="folder" label="Папка для временных файлов" option="writeable" default="special://temp/torrent2http" />
 	<setting id="download_path" type="folder" label="Папка для .torrent файлов"  option="writeable" default="" />
+    <setting id="t2h-pre-buffer-mb" type="text" label="Пребуферизация" option="writeable" default="10" />
   </category>
 </settings>

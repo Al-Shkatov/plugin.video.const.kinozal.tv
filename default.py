@@ -235,8 +235,8 @@ def get_main(params):
         genre = genre[:genre.find("<br />")]
         year = desc[desc.find("<b>Год выпуска:</b>") + 30:]
         year = year[:year.find("<br />")]
-        director = desc[desc.find("<b>Режиссер:</b>") + 25:]
-        director = director[:director.find("<br />")]
+        # director = desc[desc.find("<b>Режиссер:</b>") + 25:]
+        # director = director[:director.find("<br />")]
         xinfos = film.find('div', attrs={'class': 'tp1_desc'}).findAll('div')
         plot = ""
         for xdesc in xinfos:
@@ -253,7 +253,7 @@ def get_main(params):
         info["plot"] = plot
         info["plotoutline"] = plot
         info["title"] = title
-        info["director"] = director
+        # info["director"] = director
 
         li = xbmcgui.ListItem(title, title, img, img)
         li.setProperty('fanart_image', img)
@@ -285,15 +285,18 @@ def get_view_mode():
 
 def get_plot(container):
     plot = ""
+    skip = ['В ролях:', 'Режиссер:', 'Выпущено:']
     for tag in container.contents:
         if tag.__class__.__name__ == 'NavigableString':
             plot += '%s' % tag
         elif tag.name == 'b':
-            plot = plot + '[B]' + tag.getText() + '[/B]'
+            text = tag.getText()
+            if text not in skip:
+                plot = plot + '[B]' + tag.getText() + '[/B]'
         elif tag.name == 'br':
             plot += '\r'
-        elif tag.name == 'a':
-            plot = plot + '[I]' + tag.getText() + "[/I]"
+        # elif tag.name == 'a':
+        #    plot = plot + '[I]' + tag.getText() + "[/I]"
 
     return plot
 
